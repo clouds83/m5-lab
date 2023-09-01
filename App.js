@@ -61,7 +61,7 @@ export default function App() {
   }
 
   useEffect(() => {
-    ;(async () => {
+    ;async () => {
       try {
         await createTable()
         let menuItems = await getMenuItems()
@@ -70,22 +70,20 @@ export default function App() {
         // and then stores it into a SQLite database.
         // After that, every application restart loads the menu from the database
 
-        console.log()
-
-        if (!menuItems?.length) {
-          const menuItems = await fetchData()
-          //console.log('waka ->', menuItems)
-          saveMenuItems(menuItems)
+        if (!menuItems.length) {
+          const menuItemsFromApi = await fetchData()
+          saveMenuItems(menuItemsFromApi)
         }
+
+        console.log(menuItems)
 
         const sectionListData = getSectionListData(menuItems)
         setData(sectionListData)
       } catch (e) {
         // Handle error
-        console.log('# # # error # # #', e)
         Alert.alert(e.message)
       }
-    })()
+    }
   }, [])
 
   useUpdateEffect(() => {
@@ -130,12 +128,12 @@ export default function App() {
   return (
     <SafeAreaView style={styles.container}>
       <Searchbar
-        placeholder="Search"
-        placeholderTextColor="white"
+        placeholder='Search'
+        placeholderTextColor='white'
         onChangeText={handleSearchChange}
         value={searchBarText}
         style={styles.searchBar}
-        iconColor="white"
+        iconColor='white'
         inputStyle={{ color: 'white' }}
         elevation={0}
       />

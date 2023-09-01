@@ -1,38 +1,5 @@
 import { useRef, useEffect } from 'react'
 
-export const SECTION_LIST_MOCK_DATA = [
-  {
-    title: 'Appetizers',
-    data: [
-      {
-        id: '1',
-        title: 'Pasta',
-        price: '10',
-      },
-      {
-        id: '3',
-        title: 'Pizza',
-        price: '8',
-      },
-    ],
-  },
-  {
-    title: 'Salads',
-    data: [
-      {
-        id: '2',
-        title: 'Caesar',
-        price: '2',
-      },
-      {
-        id: '4',
-        title: 'Greek',
-        price: '3',
-      },
-    ],
-  },
-]
-
 export function getSectionListData(data) {
   // 3. Transform the raw data retrieved by the getMenuItems() inside the database.js
   // into the data structure a SectionList component expects as its "sections" prop.
@@ -42,7 +9,29 @@ export function getSectionListData(data) {
   // The title of each section should be the category.
   // The data property should contain an array of menu items.
   // Each item has the following properties: "id", "title" and "price"
-  return SECTION_LIST_MOCK_DATA
+
+  const sections = []
+
+  const menuItemsByCategory = {}
+
+  for (const menuItem of data) {
+    if (!menuItemsByCategory[menuItem.category]) {
+      menuItemsByCategory[menuItem.category] = []
+    }
+
+    menuItemsByCategory[menuItem.category].push(menuItem)
+  }
+
+  for (const category in menuItemsByCategory) {
+    const section = {
+      title: category,
+      data: menuItemsByCategory[category],
+    }
+
+    sections.push(section)
+  }
+
+  return sections
 }
 
 export function useUpdateEffect(effect, dependencies = []) {

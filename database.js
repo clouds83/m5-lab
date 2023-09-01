@@ -1,6 +1,4 @@
 import * as SQLite from 'expo-sqlite'
-import { SECTION_LIST_MOCK_DATA } from './utils'
-
 const db = SQLite.openDatabase('little_lemon')
 
 export async function createTable() {
@@ -21,38 +19,47 @@ export async function getMenuItems() {
   return new Promise((resolve) => {
     db.transaction((tx) => {
       tx.executeSql('select * from menuitems', [], (_, { rows }) => {
-        resolve(rows._array)
+        if (rows.length > 0) {
+          const menuItems = []
+
+          for (const row of rows) {
+            const menuItem = {
+              id: row['id'],
+              uuid: row['uuid'],
+              title: row['title'],
+              price: row['price'],
+              category: row['category'],
+            }
+            menuItems.push(menuItem)
+          }
+
+          resolve(menuItems)
+        } else {
+          resolve([])
+        }
       })
     })
   })
 }
 
-// export function saveMenuItems(menuItems) {
-//   db.transaction((tx) => {
-//     // 2. Implement a single SQL statement to save all menu data in a table called menuitems.
-//     // Check the createTable() function above to see all the different columns the table has
-//     // Hint: You need a SQL statement to insert multiple rows at once.
-//   });
-// }
-
+// 2. Implement a single SQL statement to save all menu data in a table called menuitems.
+// Check the createTable() function above to see all the different columns the table has
+// Hint: You need a SQL statement to insert multiple rows at once.
 export function saveMenuItems(menuItems) {
   db.transaction((tx) => {
-    const sql = `INSERT INTO menuitems (id, uuid, title, price, category)
-               VALUES (?, ?, ?, ?, ?)`
-
-    const values = menuItems.map((menuItem) => [
-      menuItem.id,
-      menuItem.uuid,
-      menuItem.title,
-      menuItem.price,
-      menuItem.category,
-    ])
-
-    tx.executeSql(sql, [].concat(...values), (_, resultSet) => {
-      // Successfully inserted data, now let's retrieve and log it
-      tx.executeSql('SELECT * FROM menuitems', [], (_, queryResult) => {
-        console.log('Inserted data:', queryResult.rows._array)
-      })
+    menuItems.forEach((item) => {
+      const query =
+        'INSERT INTO menuitems (id, uuid, title, price, category) VALUES (?, ?, ?, ?, ?)'
+      tx.executeSql(
+        query,
+        [item?.id, item?.uuid, item?.title, item?.price, item?.category],
+        (_, { rows }) => {
+          console.log('Status : Success')
+        },
+        (err) => {
+          console.log('Status : Failed')
+        }
+      )
     })
   })
 }
@@ -68,17 +75,34 @@ export function saveMenuItems(menuItems) {
  *
  * The activeCategories parameter represents an array of selected 'categories' from the filter component
  * All results should belong to an active category to be retrieved.
- * For instance, if 'pizza' and 'pasta' belong to the 'Main Dishes' category and 'french fries' and 'salad' to the 'Sides' category,
- * a value of ['Main Dishes'] for active categories should return  only'pizza' and 'pasta'
+ * For instance, if 'pizza' and 'pasta' belong to the 'Main Dishes' category and 'french fries' and 'salad' to the
+ * 'Sides' category, a value of ['Main Dishes'] for active categories should return  only'pizza' and 'pasta'
  *
  * Finally, the SQL statement must support filtering by both criteria at the same time.
- * That means if the query is 'a' and the active category 'Main Dishes', the SQL statement should return only 'pizza' and 'pasta'
- * 'french fries' is excluded because it's part of a different category and 'salad' is excluded due to the same reason,
- * even though the query 'a' it's a substring of 'salad', so the combination of the two filters should be linked with the AND keyword
+ * That means if the query is 'a' and the active category 'Main Dishes', the SQL statement should return only
+ * 'pizza' and 'pasta', 'french fries' is excluded because it's part of a different category and 'salad' is
+ * excluded due to the same reason, even though the query 'a' it's a substring of 'salad', so the combination
+ * of the two filters should be linked with the AND keyword
  *
  */
+
 export async function filterByQueryAndCategories(query, activeCategories) {
-  return new Promise((resolve, reject) => {
-    resolve(SECTION_LIST_MOCK_DATA)
+  return new Promise(async (resolve) => {
+    const menuItems = await getMenuItems()
+
+    const filteredItems = menuItems.filter((item) => {
+      // Filter by categories
+      const categoryMatch =
+        activeCategories.length === 0 ||
+        activeCategories.includes(item.category)
+
+      // Filter by query
+      const queryMatch =
+        query === '' || item.title.toLowerCase().includes(query.toLowerCase())
+
+      return categoryMatch && queryMatch
+    })
+
+    resolve(filteredItems)
   })
 }

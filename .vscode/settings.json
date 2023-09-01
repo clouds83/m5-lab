@@ -1,4 +1,9 @@
 {
   "prettier.bracketSameLine": true,
-  "editor.defaultFormatter": "esbenp.prettier-vscode"
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "prettier.semi": false,
+  "prettier.jsxSingleQuote": true,
+  "prettier.proseWrap": "preserve",
+  "prettier.singleQuote": true,
+  "reactSnippets.settings.prettierEnabled": true
 }
